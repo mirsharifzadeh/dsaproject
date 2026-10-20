@@ -4,8 +4,9 @@
 
 #include "tp3.h"
 
-<<<<<<< Updated upstream
-=======
+#include <stdlib.h>
+#include <string.h>
+
 T_Client *createClient(char *last_name, char *first_name, int age, int num_room) {
     T_Client *newClient = (T_Client *)malloc(sizeof(T_Client));
     if (!newClient) return NULL;
@@ -104,4 +105,3 @@ int deleteSite(T_Hotel *hotel, char *city) {
 
     return 0;
 }
->>>>>>> Stashed changes
