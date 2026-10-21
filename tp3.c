@@ -4,6 +4,7 @@
 
 #include "tp3.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -130,7 +131,7 @@ int deleteClient(T_Site *site, char *last_name, char *first_name) {
 
             site->number_clients--;
             return 1;
-            }
+        }
         prev = curr;
         curr = curr->next;
     }
@@ -146,7 +147,6 @@ int deleteSite(T_Hotel *hotel, char *city) {
 
     while (curr != NULL) {
         if (strcmp(curr->city, city) == 0) {
-
             if (prev == NULL) {
                 hotel->first = curr->next;
             } else {
@@ -161,33 +161,78 @@ int deleteSite(T_Hotel *hotel, char *city) {
                 free(temp->first_name);
                 free(temp);
             }
+        }
+    }
+    return 1;
+}
 
 void displayHotel(T_Hotel *hotel){
     if(!hotel || !hotel->first){
         printf("There is nothing to show!");
         return;
     }
-    struct T_Site* temp = hotel->first;
-    printf("%-15s %-10d","City","Number of customers")
+    T_Site* temp = hotel->first;
+    printf("%-15s %-10s", "City", "Number of customers");
     while (temp != NULL) {
-        printf("---------------------------------------------")
+        printf("---------------------------------------------");
         printf("%-15s %-10d", temp->city,temp->number_clients);
         temp = temp->next;
     }
 }
-void displaySite(T_Site *site){
+
+void displaySite(T_Site *site) {
     if(!site || !site->first){
         printf("There is nothing to show!");
         return;
     }
-    struct T_Client* temp = site->first;
-    printf("%-15s %-15s %-10d %-10d","Last Name","First Name","Age","Room")
+    T_Client* temp = site->first;
+    printf("%-15s %-15s %-10s %-10s","Last Name","First Name","Age","Room");
     while (temp != NULL) {
-        printf("----------------------------------------------------------")
+        printf("----------------------------------------------------------");
         printf("%-15s %-15s %-10d %-10d", temp->last_name,temp->first_name,temp->age,temp->num_room);
         temp = temp->next;
     }
 }
+
+void processingfile(T_Hotel *hotel) {
+    if (hotel == NULL) return;
+
+    FILE *file = fopen("bookings.txt", "r");
+    if (file == NULL) return;
+
+    char last_name[100];
+    char first_name[100];
+    int age;
+    int num_room;
+    char city[100];
+
+    while (fscanf(file, " %99[^;]; %99[^;]; %d; %d; %99[^\n]", last_name, first_name, &age, &num_room, city) == 5) {
+
+        T_Site *targetSite = NULL;
+        T_Site *currSite = hotel->first;
+
+        while (currSite != NULL) {
+            if (strcmp(currSite->city, city) == 0) {
+                targetSite = currSite;
+                break;
+            }
+            currSite = currSite->next;
+        }
+
+        if (targetSite == NULL) {
+            targetSite = createSite(city);
+            if (targetSite != NULL) {
+                addSite(hotel, targetSite);
+            }
+        }
+
+        if (targetSite != NULL) {
+            T_Client *newClient = createClient(last_name, first_name, age, num_room);
+            if (newClient != NULL) {
+                addClient(targetSite, newClient);
+            }
+        }
     }
-}
+
+    fclose(file);
 }
