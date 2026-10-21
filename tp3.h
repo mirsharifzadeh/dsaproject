@@ -41,9 +41,9 @@ void displayHotel(T_Hotel *hotel);
 
 void displaySite(T_Site *site);
 
-int deleteClient(T_Site *site, char *last_name, char *first_name);
+int deleteClient(T_Site *site, int index);
 
-int deleteSite(T_Hotel *hotel, char *city);
+int deleteSite(T_Hotel *hotel, int index);
 
 void searchClients(T_Hotel *hotel, char *critereaName);
 
