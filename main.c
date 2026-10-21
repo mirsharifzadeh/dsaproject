@@ -3,6 +3,67 @@
 #include <string.h>
 #include "tp3.h"
 
+T_Site* selectSite(T_Hotel *hotel) {
+    if (hotel == NULL || hotel->first == NULL) {
+        printf("No locations available.\n");
+        return NULL;
+    }
+
+    printf("\n--- Available Locations ---\n");
+    printf("%-5s %-20s %-15s\n", "No", "City", "Clients Count");
+    printf("-----------------------------------------\n");
+
+    T_Site *curr = hotel->first;
+    int index = 1;
+    while (curr != NULL) {
+        printf("%-5d %-20s %-15d\n", index++, curr->city, curr->number_clients);
+        curr = curr->next;
+    }
+    printf("-----------------------------------------\n");
+
+    int choice;
+    printf("Select location (1-%d): ", index - 1);
+    if (scanf("%d", &choice) != 1 || choice < 1 || choice >= index) {
+        while (getchar() != '\n');
+        printf("Invalid selection!\n");
+        return NULL;
+    }
+
+    curr = hotel->first;
+    for (int i = 1; i < choice; i++) {
+        curr = curr->next;
+    }
+    return curr;
+}
+
+int selectSiteIndex(T_Hotel *hotel) {
+    if (hotel == NULL || hotel->first == NULL) {
+        printf("No locations available.\n");
+        return 0;
+    }
+
+    printf("\n--- Available Locations ---\n");
+    printf("%-5s %-20s %-15s\n", "No", "City", "Clients Count");
+    printf("-----------------------------------------\n");
+
+    T_Site *curr = hotel->first;
+    int index = 1;
+    while (curr != NULL) {
+        printf("%-5d %-20s %-15d\n", index++, curr->city, curr->number_clients);
+        curr = curr->next;
+    }
+    printf("-----------------------------------------\n");
+
+    int choice;
+    printf("Select location to delete (1-%d): ", index - 1);
+    if (scanf("%d", &choice) != 1 || choice < 1 || choice >= index) {
+        while (getchar() != '\n');
+        printf("Invalid selection!\n");
+        return 0;
+    }
+    return choice;
+}
+
 int main() {
     T_Hotel *hotel = NULL;
     int choice = 0;
@@ -64,40 +125,28 @@ int main() {
                 }
                 break;
 
-            case 3:
-                if (hotel == NULL || hotel->first == NULL) {
-                    printf("No locations available. Add a location first.\n");
-                } else {
-                    printf("Enter city name: ");
-                    scanf(" %[^\n]", city);
+            case 3: {
+                T_Site *selectedSite = selectSite(hotel);
+                if (selectedSite != NULL) {
+                    printf("Enter client's Last Name: ");
+                    scanf(" %[^\n]", last_name);
+                    printf("Enter client's First Name: ");
+                    scanf(" %[^\n]", first_name);
+                    printf("Enter Age: ");
+                    scanf("%d", &age);
+                    printf("Enter Room Number: ");
+                    scanf("%d", &num_room);
 
-                    T_Site *curr = hotel->first;
-                    while (curr != NULL && strcmp(curr->city, city) != 0) {
-                        curr = curr->next;
-                    }
-
-                    if (curr == NULL) {
-                        printf("Location '%s' not found!\n", city);
+                    T_Client *newClient = createClient(last_name, first_name, age, num_room);
+                    if (addClient(selectedSite, newClient)) {
+                        printf("Booking added successfully to '%s'.\n", selectedSite->city);
                     } else {
-                        printf("Enter client's Last Name: ");
-                        scanf(" %[^\n]", last_name);
-                        printf("Enter client's First Name: ");
-                        scanf(" %[^\n]", first_name);
-                        printf("Enter Age: ");
-                        scanf("%d", &age);
-                        printf("Enter Room Number: ");
-                        scanf("%d", &num_room);
-
-                        T_Client *newClient = createClient(last_name, first_name, age, num_room);
-                        if (addClient(curr, newClient)) {
-                            printf("Booking added successfully to '%s'.\n", city);
-                        } else {
-                            printf("Failed to add booking.\n");
-                            if (newClient) free(newClient);
-                        }
+                        printf("Failed to add booking.\n");
+                        if (newClient) free(newClient);
                     }
                 }
                 break;
+            }
 
             case 4:
                 if (hotel == NULL) {
@@ -107,69 +156,60 @@ int main() {
                 }
                 break;
 
-            case 5:
-                if (hotel == NULL || hotel->first == NULL) {
-                    printf("No locations available.\n");
-                } else {
-                    printf("Enter city name: ");
-                    scanf(" %[^\n]", city);
-
-                    T_Site *curr = hotel->first;
-                    while (curr != NULL && strcmp(curr->city, city) != 0) {
-                        curr = curr->next;
-                    }
-
-                    if (curr == NULL) {
-                        printf("Location '%s' not found!\n", city);
-                    } else {
-                        displaySite(curr);
-                    }
+            case 5: {
+                T_Site *selectedSite = selectSite(hotel);
+                if (selectedSite != NULL) {
+                    displaySite(selectedSite);
                 }
                 break;
+            }
 
-            case 6:
-                if (hotel == NULL || hotel->first == NULL) {
-                    printf("No locations available.\n");
+            case 6: {
+                T_Site *selectedSite = selectSite(hotel);
+                if (selectedSite == NULL) break;
+
+                if (selectedSite->first == NULL) {
+                    printf("No clients found in '%s'.\n", selectedSite->city);
                 } else {
-                    printf("Enter city name: ");
-                    scanf(" %[^\n]", city);
+                    printf("\n--- Clients in %s ---\n", selectedSite->city);
+                    printf("%-5s %-15s %-15s %-8s %-10s\n", "No", "Last Name", "First Name", "Age", "Room");
+                    printf("---------------------------------------------------------\n");
 
-                    T_Site *curr = hotel->first;
-                    while (curr != NULL && strcmp(curr->city, city) != 0) {
-                        curr = curr->next;
+                    T_Client *clientCurr = selectedSite->first;
+                    int clientIndex = 1;
+                    while (clientCurr != NULL) {
+                        printf("%-5d %-15s %-15s %-8d %-10d\n", clientIndex++, clientCurr->last_name, clientCurr->first_name, clientCurr->age, clientCurr->num_room);
+                        clientCurr = clientCurr->next;
                     }
+                    printf("---------------------------------------------------------\n");
 
-                    if (curr == NULL) {
-                        printf("Location '%s' not found!\n", city);
-                    } else {
-                        printf("Enter client Last Name to delete: ");
-                        scanf(" %[^\n]", last_name);
-                        printf("Enter client First Name to delete: ");
-                        scanf(" %[^\n]", first_name);
-
-                        if (deleteClient(curr, last_name, first_name)) {
+                    int clientChoice;
+                    printf("Enter the number of the client to delete (1-%d): ", clientIndex - 1);
+                    if (scanf("%d", &clientChoice) == 1 && clientChoice >= 1 && clientChoice < clientIndex) {
+                        if (deleteClient(selectedSite, clientChoice)) {
                             printf("Booking deleted successfully.\n");
                         } else {
-                            printf("Client not found in '%s'.\n", city);
+                            printf("Failed to delete booking.\n");
                         }
-                    }
-                }
-                break;
-
-            case 7:
-                if (hotel == NULL || hotel->first == NULL) {
-                    printf("No locations available to delete.\n");
-                } else {
-                    printf("Enter city name to delete: ");
-                    scanf(" %[^\n]", city);
-
-                    if (deleteSite(hotel, city)) {
-                        printf("Location '%s' and all its bookings deleted.\n", city);
                     } else {
-                        printf("Location '%s' not found.\n", city);
+                        while (getchar() != '\n');
+                        printf("Invalid selection!\n");
                     }
                 }
                 break;
+            }
+
+            case 7: {
+                int siteIdx = selectSiteIndex(hotel);
+                if (siteIdx > 0) {
+                    if (deleteSite(hotel, siteIdx)) {
+                        printf("Location and all its bookings deleted successfully.\n");
+                    } else {
+                        printf("Failed to delete location.\n");
+                    }
+                }
+                break;
+            }
 
             case 8:
                 if (hotel == NULL) {
@@ -177,7 +217,7 @@ int main() {
                 } else {
                     printf("Enter search criteria (Last Name prefix): ");
                     scanf(" %[^\n]", last_name);
-                    searchClients(*hotel, last_name);
+                    searchClients(hotel, last_name);
                 }
                 break;
 

@@ -43,21 +43,20 @@ T_Hotel *createHotel(char *name) {
     return newHotel;
 }
 
-int addClient(T_Site *site, T_Client *client){
-    if(site == NULL || client == NULL){
+int addClient(T_Site *site, T_Client *client) {
+    if (site == NULL || client == NULL) {
         return 0;
     }
 
-    if(site->first == NULL){
+    if (site->first == NULL) {
         site->first = client;
         site->number_clients++;
-
         return 1;
     }
 
-    if (strcmp(client->last_name, site->first->last_name) < 0 || 
+    if (strcmp(client->last_name, site->first->last_name) < 0 ||
         (strcmp(client->last_name, site->first->last_name) == 0 &&
-        strcmp(client->first_name, site->first->first_name) < 0)){
+        strcmp(client->first_name, site->first->first_name) < 0)) {
         client->next = site->first;
         site->first = client;
         site->number_clients++;
@@ -111,38 +110,37 @@ int addSite(T_Hotel *hotel, T_Site *site) {
     return 1;
 }
 
-int deleteClient(T_Site *site, char *last_name, char *first_name) {
-    if (site == NULL || site->first == NULL) return 0;
+int deleteClient(T_Site *site, int index) {
+    if (site == NULL || site->first == NULL || index < 1) return 0;
 
-    if (strcmp(site->first->last_name, last_name) == 0 &&
-        strcmp(site->first->first_name, first_name) == 0) {
+    if (index == 1) {
         T_Client *temp = site->first;
         site->first = site->first->next;
         free(temp);
         site->number_clients--;
         return 1;
-        }
-
-    T_Client *curr = site->first;
-    while (curr->next != NULL) {
-        if (strcmp(curr->next->last_name, last_name) == 0 &&
-            strcmp(curr->next->first_name, first_name) == 0) {
-            T_Client *temp = curr->next;
-            curr->next = temp->next;
-            free(temp);
-            site->number_clients--;
-            return 1;
-            }
-        curr = curr->next;
     }
 
-    return 0;
+    T_Client *curr = site->first;
+    int count = 1;
+    while (curr->next != NULL && count < index - 1) {
+        curr = curr->next;
+        count++;
+    }
+
+    if (curr->next == NULL) return 0;
+
+    T_Client *temp = curr->next;
+    curr->next = temp->next;
+    free(temp);
+    site->number_clients--;
+    return 1;
 }
 
-int deleteSite(T_Hotel *hotel, char *city) {
-    if (hotel == NULL || hotel->first == NULL) return 0;
+int deleteSite(T_Hotel *hotel, int index) {
+    if (hotel == NULL || hotel->first == NULL || index < 1) return 0;
 
-    if (strcmp(hotel->first->city, city) == 0) {
+    if (index == 1) {
         T_Site *temp = hotel->first;
         hotel->first = hotel->first->next;
 
@@ -158,53 +156,56 @@ int deleteSite(T_Hotel *hotel, char *city) {
     }
 
     T_Site *curr = hotel->first;
-    while (curr->next != NULL) {
-        if (strcmp(curr->next->city, city) == 0) {
-            T_Site *temp = curr->next;
-            curr->next = temp->next;
-
-            T_Client *clientCurr = temp->first;
-            while (clientCurr != NULL) {
-                T_Client *clientTemp = clientCurr;
-                clientCurr = clientCurr->next;
-                free(clientTemp);
-            }
-
-            free(temp);
-            return 1;
-        }
+    int count = 1;
+    while (curr->next != NULL && count < index - 1) {
         curr = curr->next;
+        count++;
     }
 
-    return 0;
+    if (curr->next == NULL) return 0;
+
+    T_Site *temp = curr->next;
+    curr->next = temp->next;
+
+    T_Client *clientCurr = temp->first;
+    while (clientCurr != NULL) {
+        T_Client *clientTemp = clientCurr;
+        clientCurr = clientCurr->next;
+        free(clientTemp);
+    }
+
+    free(temp);
+    return 1;
 }
 
-void displayHotel(T_Hotel *hotel){
-    if(!hotel || !hotel->first){
-        printf("There is nothing to show!");
+void displayHotel(T_Hotel *hotel) {
+    if (!hotel || !hotel->first) {
+        printf("\nThere is nothing to show!\n");
         return;
     }
-    T_Site* temp = hotel->first;
-    printf("%-15s %-10s", "City", "Number of customers");
+    T_Site *temp = hotel->first;
+    printf("\n%-20s %-20s\n", "City", "Number of customers");
+    printf("-----------------------------------------\n");
     while (temp != NULL) {
-        printf("---------------------------------------------");
-        printf("%-15s %-10d", temp->city,temp->number_clients);
+        printf("%-20s %-20d\n", temp->city, temp->number_clients);
         temp = temp->next;
     }
+    printf("-----------------------------------------\n");
 }
 
 void displaySite(T_Site *site) {
-    if(!site || !site->first){
-        printf("There is nothing to show!");
+    if (!site || !site->first) {
+        printf("\nThere is nothing to show!\n");
         return;
     }
-    T_Client* temp = site->first;
-    printf("%-15s %-15s %-10s %-10s","Last Name","First Name","Age","Room");
+    T_Client *temp = site->first;
+    printf("\n%-15s %-15s %-10s %-10s\n", "Last Name", "First Name", "Age", "Room");
+    printf("--------------------------------------------------\n");
     while (temp != NULL) {
-        printf("----------------------------------------------------------");
-        printf("%-15s %-15s %-10d %-10d", temp->last_name,temp->first_name,temp->age,temp->num_room);
+        printf("%-15s %-15s %-10d %-10d\n", temp->last_name, temp->first_name, temp->age, temp->num_room);
         temp = temp->next;
     }
+    printf("--------------------------------------------------\n");
 }
 
 void processingfile(T_Hotel *hotel) {
@@ -248,23 +249,29 @@ void processingfile(T_Hotel *hotel) {
     }
     fclose(file);
 }
-void searchClients(T_Hotel *hotel, char *critereaName){
-    if(!hotel || !critereaName){
-        printf("Nothing to show!");
+
+void searchClients(T_Hotel *hotel, char *critereaName) {
+    if (!hotel || !critereaName) {
+        printf("Nothing to show!\n");
         return;
     }
-    T_Site* temp = hotel->first;
-    printf("%-15s %-15s %-10s %-10s %-15s","Last Name","First Name","Age","Room","City");
-    while(temp!=NULL){
-        printf("----------------------------------------------------------");
-        T_Client* temp2 = temp->first;
-        while(temp2!=NULL){
-            if(temp2->last_name == critereaName[0]){
-                printf("%-15s %-15s %-10d %-10d %-15s", temp2->last_name,temp2->first_name,temp2->age,temp2->num_room,temp->city);
+
+    T_Site *temp = hotel->first;
+    size_t len = strlen(critereaName);
+
+    printf("\n%-15s %-15s %-10s %-10s %-15s\n", "Last Name", "First Name", "Age", "Room", "City");
+    printf("-------------------------------------------------------------------\n");
+
+    while (temp != NULL) {
+        T_Client *temp2 = temp->first;
+        while (temp2 != NULL) {
+            if (strncmp(temp2->last_name, critereaName, len) == 0) {
+                printf("%-15s %-15s %-10d %-10d %-15s\n",
+                       temp2->last_name, temp2->first_name, temp2->age, temp2->num_room, temp->city);
             }
-        temp2 = temp2->next;
+            temp2 = temp2->next;
         }
         temp = temp->next;
     }
+    printf("-------------------------------------------------------------------\n");
 }
-
