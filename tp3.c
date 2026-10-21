@@ -162,13 +162,32 @@ int deleteSite(T_Hotel *hotel, char *city) {
                 free(temp);
             }
 
-            free(curr->city);
-            free(curr);
-            return 1;
-        }
-        prev = curr;
-        curr = curr->next;
+void displayHotel(T_Hotel *hotel){
+    if(!hotel || !hotel->first){
+        printf("There is nothing to show!");
+        return;
     }
-
-    return 0;
+    struct T_Site* temp = hotel->first;
+    printf("%-15s %-10d","City","Number of customers")
+    while (temp != NULL) {
+        printf("---------------------------------------------")
+        printf("%-15s %-10d", temp->city,temp->number_clients);
+        temp = temp->next;
+    }
+}
+void displaySite(T_Site *site){
+    if(!site || !site->first){
+        printf("There is nothing to show!");
+        return;
+    }
+    struct T_Client* temp = site->first;
+    printf("%-15s %-15s %-10d %-10d","Last Name","First Name","Age","Room")
+    while (temp != NULL) {
+        printf("----------------------------------------------------------")
+        printf("%-15s %-15s %-10d %-10d", temp->last_name,temp->first_name,temp->age,temp->num_room);
+        temp = temp->next;
+    }
+}
+    }
+}
 }
