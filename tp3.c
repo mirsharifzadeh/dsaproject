@@ -109,29 +109,29 @@ int addSite(T_Hotel *hotel, T_Site *site) {
     current->next = site;
     return 1;
 }
+
 int deleteClient(T_Site *site, char *last_name, char *first_name) {
-    if (site == NULL && site->first == NULL) return 0;
+    if (site == NULL || site->first == NULL) return 0;
+
+    if (strcmp(site->first->last_name, last_name) == 0 &&
+        strcmp(site->first->first_name, first_name) == 0) {
+        T_Client *temp = site->first;
+        site->first = site->first->next;
+        free(temp);
+        site->number_clients--;
+        return 1;
+        }
 
     T_Client *curr = site->first;
-    T_Client *prev = NULL;
-
-    while (curr != NULL) {
-        if (strcmp(curr->last_name, last_name) == 0 && strcmp(curr->first_name, first_name) == 0) {
-
-            if (prev == NULL) {
-                site->first = curr->next;
-            } else {
-                prev->next = curr->next;
-            }
-
-            free(curr->last_name);
-            free(curr->first_name);
-            free(curr);
-
+    while (curr->next != NULL) {
+        if (strcmp(curr->next->last_name, last_name) == 0 &&
+            strcmp(curr->next->first_name, first_name) == 0) {
+            T_Client *temp = curr->next;
+            curr->next = temp->next;
+            free(temp);
             site->number_clients--;
             return 1;
             }
-        prev = curr;
         curr = curr->next;
     }
 
@@ -139,34 +139,39 @@ int deleteClient(T_Site *site, char *last_name, char *first_name) {
 }
 
 int deleteSite(T_Hotel *hotel, char *city) {
-    if (!hotel || !hotel->first) return 0;
+    if (hotel == NULL || hotel->first == NULL) return 0;
+
+    if (strcmp(hotel->first->city, city) == 0) {
+        T_Site *temp = hotel->first;
+        hotel->first = hotel->first->next;
+
+        T_Client *clientCurr = temp->first;
+        while (clientCurr != NULL) {
+            T_Client *clientTemp = clientCurr;
+            clientCurr = clientCurr->next;
+            free(clientTemp);
+        }
+
+        free(temp);
+        return 1;
+    }
 
     T_Site *curr = hotel->first;
-    T_Site *prev = NULL;
+    while (curr->next != NULL) {
+        if (strcmp(curr->next->city, city) == 0) {
+            T_Site *temp = curr->next;
+            curr->next = temp->next;
 
-    while (curr != NULL) {
-        if (strcmp(curr->city, city) == 0) {
-
-            if (prev == NULL) {
-                hotel->first = curr->next;
-            } else {
-                prev->next = curr->next;
-            }
-            
-            T_Client *clientCurr = curr->first;
+            T_Client *clientCurr = temp->first;
             while (clientCurr != NULL) {
-                T_Client *temp = clientCurr;
+                T_Client *clientTemp = clientCurr;
                 clientCurr = clientCurr->next;
-                free(temp->last_name);
-                free(temp->first_name);
-                free(temp);
+                free(clientTemp);
             }
 
-            free(curr->city);
-            free(curr);
+            free(temp);
             return 1;
         }
-        prev = curr;
         curr = curr->next;
     }
 
