@@ -193,45 +193,6 @@ void displaySite(T_Site *site) {
         temp = temp->next;
     }
 }
-
-void processingfile(T_Hotel *hotel) {
-    if (hotel == NULL) return;
-
-    FILE *file = fopen("bookings.txt", "r");
-    if (file == NULL) return;
-
-    char last_name[100];
-    char first_name[100];
-    int age;
-    int num_room;
-    char city[100];
-
-    while (fscanf(file, " %99[^;]; %99[^;]; %d; %d; %99[^\n]", last_name, first_name, &age, &num_room, city) == 5) {
-
-        T_Site *targetSite = NULL;
-        T_Site *currSite = hotel->first;
-
-        while (currSite != NULL) {
-            if (strcmp(currSite->city, city) == 0) {
-                targetSite = currSite;
-                break;
-            }
-            currSite = currSite->next;
-        }
-
-        if (targetSite == NULL) {
-            targetSite = createSite(city);
-            if (targetSite != NULL) {
-                addSite(hotel, targetSite);
-            }
-        }
-
-        if (targetSite != NULL) {
-            T_Client *newClient = createClient(last_name, first_name, age, num_room);
-            if (newClient != NULL) {
-                addClient(targetSite, newClient);
-            }
-        }
     }
-    fclose(file);
+}
 }
