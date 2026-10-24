@@ -49,6 +49,19 @@ Room *createRoom(int num) {
     return newRoom;
 }
 
+int isRoomBooked(T_Site *site, int room_num) {
+    if (site == NULL) return 0;
+
+    T_Client *curr = site->first;
+    while (curr != NULL) {
+        if (curr->num_room == room_num) {
+            return 1;
+        }
+        curr = curr->next;
+    }
+    return 0;
+}
+
 int addClient(T_Site *site, T_Client *client) {
     if (site == NULL || client == NULL) return 0;
 
@@ -159,7 +172,6 @@ int deleteSite(T_Hotel *hotel, int index) {
         T_Site *temp = hotel->first;
         hotel->first = hotel->first->next;
 
-        // Müştəriləri təmizləmək
         T_Client *clientCurr = temp->first;
         while (clientCurr != NULL) {
             T_Client *clientTemp = clientCurr;
@@ -167,7 +179,6 @@ int deleteSite(T_Hotel *hotel, int index) {
             free(clientTemp);
         }
 
-        // Otaqları təmizləmək
         Room *roomCurr = temp->room_first;
         while (roomCurr != NULL) {
             Room *roomTemp = roomCurr;
@@ -208,7 +219,6 @@ int deleteSite(T_Hotel *hotel, int index) {
     free(temp);
     return 1;
 }
-
 
 void displayRoom(T_Site *site) {
     if (!site || !site->room_first) {
@@ -283,45 +293,87 @@ void displaySite(T_Site *site) {
 }
 
 void processingfile(T_Hotel *hotel) {
-    if (hotel == NULL) return;
+    if (hotel == NULL) {
+        printf("\nPlease create a hotel chain first!\n");
+        return;
+    }
 
     FILE *file = fopen("bookings.txt", "r");
-    if (file == NULL) return;
+    if (file == NULL) {
+        file = fopen("../bookings.txt", "r");
+    }
 
+    if (file == NULL) {
+        printf("\nCould not open 'bookings.txt'! Make sure the file exists in the project directory.\n");
+        return;
+    }
+
+    char line[256];
     char last_name[100];
     char first_name[100];
     int age;
     int num_room;
     char city[100];
+    int added_count = 0;
 
-    while (fscanf(file, " %99[^;]; %99[^;]; %d; %d; %99[^\n]", last_name, first_name, &age, &num_room, city) == 5) {
+    if (fgets(line, sizeof(line), file) == NULL) {
+        fclose(file);
+        return;
+    }
 
-        T_Site *targetSite = NULL;
-        T_Site *currSite = hotel->first;
+    while (fgets(line, sizeof(line), file) != NULL) {
+        if (sscanf(line, " %99[^;];%99[^;];%d;%d;%99[^\r\n]", last_name, first_name, &age, &num_room, city) == 5) {
 
-        while (currSite != NULL) {
-            if (strcmp(currSite->city, city) == 0) {
-                targetSite = currSite;
-                break;
+            T_Site *targetSite = NULL;
+            T_Site *currSite = hotel->first;
+
+            while (currSite != NULL) {
+                if (strcmp(currSite->city, city) == 0) {
+                    targetSite = currSite;
+                    break;
+                }
+                currSite = currSite->next;
             }
-            currSite = currSite->next;
-        }
 
-        if (targetSite == NULL) {
-            targetSite = createSite(city);
+            if (targetSite == NULL) {
+                targetSite = createSite(city);
+                if (targetSite != NULL) {
+                    addSite(hotel, targetSite);
+                }
+            }
+
             if (targetSite != NULL) {
-                addSite(hotel, targetSite);
-            }
-        }
+                Room *r = targetSite->room_first;
+                int room_exists = 0;
+                while (r != NULL) {
+                    if (r->num == num_room) {
+                        room_exists = 1;
+                        break;
+                    }
+                    r = r->next;
+                }
 
-        if (targetSite != NULL) {
-            T_Client *newClient = createClient(last_name, first_name, age, num_room);
-            if (newClient != NULL) {
-                addClient(targetSite, newClient);
+                if (!room_exists) {
+                    Room *newRoom = createRoom(num_room);
+                    addRoom(targetSite, newRoom);
+                }
+
+                if (!isRoomBooked(targetSite, num_room)) {
+                    T_Client *newClient = createClient(last_name, first_name, age, num_room);
+                    if (newClient != NULL) {
+                        if (addClient(targetSite, newClient)) {
+                            added_count++;
+                        } else {
+                            free(newClient);
+                        }
+                    }
+                }
             }
         }
     }
+
     fclose(file);
+    printf("\nFile processed successfully. %d new booking(s) added from 'bookings.txt'.\n", added_count);
 }
 
 void searchClients(T_Hotel *hotel, char *critereaName) {

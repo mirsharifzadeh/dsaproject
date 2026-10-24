@@ -40,7 +40,7 @@ To overcome these constraints, we integrated a **Numeric Indexing Interface**:
 * **Client Sorting**: Customer records are automatically organized alphabetically by `last_name`, and secondary-sorted by `first_name` if last names match.
 
 ### Automated File Processing
-* Reads structured data from `bookings.txt` (`LastName; FirstName; Age; RoomNumber; City`).
+* Reads structured data from `cmake-build-debug/bookings.txt` (`LastName; FirstName; Age; RoomNumber; City`).
 * Dynamically instantiates new site locations and client records on the fly while preserving sorted order.
 
 ### Prefix Search Engine
