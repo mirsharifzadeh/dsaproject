@@ -41,6 +41,8 @@ void displayHotel(T_Hotel *hotel);
 void displaySite(T_Site *site);
 void displayRoom(T_Site *site);
 
+int isRoomBooked(T_Site *site, int room_num);
+
 int deleteClient(T_Site *site, int index);
 int deleteSite(T_Hotel *hotel, int index);
 int deleteRoom(T_Site *site, int index);

@@ -3,19 +3,6 @@
 #include <string.h>
 #include "tp3.h"
 
-int isRoomBooked(T_Site *site, int room_num) {
-    if (site == NULL) return 0;
-
-    T_Client *curr = site->first;
-    while (curr != NULL) {
-        if (curr->num_room == room_num) {
-            return 1;
-        }
-        curr = curr->next;
-    }
-    return 0;
-}
-
 Room* selectRoom(T_Site *site) {
     if (site == NULL || site->room_first == NULL) {
         printf("\nNo rooms available in '%s'! Please add a room first.\n", site->city);
@@ -153,7 +140,8 @@ int main() {
         printf("9. Delete a booking at a location\n");
         printf("10. Delete a location\n");
         printf("11. Search for a customer by last name\n");
-        printf("12. Quit\n");
+        printf("12. Load Bookings from a text file\n");
+        printf("13. Quit\n");
         printf("Enter your choice (1-12): ");
 
         if (scanf("%d", &choice) != 1) {
@@ -348,6 +336,16 @@ int main() {
                 break;
 
             case 12:
+
+                if (hotel == NULL) {
+                    printf("Please create a hotel chain first (Option 1).\n");
+                } else {
+                    processingfile(hotel);
+                }
+                break;
+                
+
+            case 13:
                 printf("Saving data and exiting program...\n");
                 if (hotel != NULL) {
                     saveData(hotel, "hotel_database.txt");
